@@ -3,10 +3,12 @@ package network;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.sun.org.apache.xpath.internal.operations.String;
+
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,11 +21,11 @@ public class MyHttpHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) {
         try {
             StringBuilder responseText = new StringBuilder();
-            responseText.append("request method ").append(httpExchange.getRequestMethod().).append("<br/>");
-            responseText.append("request parameter ").append();
+            responseText.append("request method ").append(httpExchange.getRequestMethod()).append("<br/>");
+            responseText.append("request parameter ").append(getRequestPara(httpExchange)).append("<br/>");
             responseText.append("request header: <br/>").append(getRequestHeader(httpExchange));
         } catch (Exception e) {
-
+        e.printStackTrace();
         }
     }
     private String getRequestHeader(HttpExchange httpExchange)
@@ -40,6 +42,7 @@ public class MyHttpHandler implements HttpHandler {
         {
             param = httpExchange.getRequestURI().getQuery();
 
+
         }
         else
         {
@@ -48,9 +51,27 @@ public class MyHttpHandler implements HttpHandler {
             String line = null;
             while((line = bufferedReader.readLine())!=null)
             {
-
+                requestBodyContent.append(line);
             }
-
+            param = requestBodyContent.toString();
         }
+        return param;
     }
+    private void handleResponse(HttpExchange httpExchange,String responseText) throws Exception
+    {
+        StringBuilder responseContent = new StringBuilder();
+        responseContent.append("<html>").append("<body>").append(responseText).append("<>body").append("</html>");
+        String responseContentString = responseContent.toString();
+        byte[] responseContentByte = responseContentString.getBytes(StandardCharsets.UTF_8);
+
+        httpExchange.getRequestHeaders().add("Content-type","text/html;charset = utf-8");
+        httpExchange.sendResponseHeaders(200,responseContentByte.length);
+        OutputStream out = httpExchange.getResponseBody();
+        out.write(responseContentByte);
+        out.flush();
+        out.close();
+    }
+
+
+
 }

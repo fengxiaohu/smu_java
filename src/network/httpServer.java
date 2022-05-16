@@ -18,7 +18,7 @@ public class httpServer {
     public static void main(String[] args) throws IOException
     {
         HttpServer httpServer = HttpServer.create(new InetSocketAddress(8080),0);
-        httpServer.createContext("/",new MyHttpHandler());
+        httpServer.createContext("/mypage",new MyHttpHandler());
         httpServer.setExecutor(Executors.newFixedThreadPool(10));
         httpServer.start();
     }
